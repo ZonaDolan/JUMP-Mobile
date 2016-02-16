@@ -28,7 +28,7 @@ public class PlayerController : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-        bool jump = Input.GetKeyDown(KeyCode.Space);
+		bool jump = Input.GetKeyDown(KeyCode.W);
 
         if(jump && canJump) {
             // TODO force jump
