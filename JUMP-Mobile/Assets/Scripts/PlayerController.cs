@@ -5,6 +5,7 @@ public class PlayerController : MonoBehaviour {
     public Enums.MoveDirection playerDirection = Enums.MoveDirection.MoveRight;
     public float speed = 3;
     public float jumpForce = 10;
+    public int jumpLimit = 1;
     public float rayLength = 0.3f;
     public LayerMask collisionMask;
 
@@ -15,11 +16,16 @@ public class PlayerController : MonoBehaviour {
 
     private bool onGround;
     private bool canJump;
+    private int jumpCount;
 
 	// Use this for initialization
 	void Start () {
         playerRigidBody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        jumpCount = 0;
+
+        animator.SetBool("onGround", true);
+        canJump = true;
 	}
 
     void FixedUpdate() {
@@ -30,10 +36,13 @@ public class PlayerController : MonoBehaviour {
 	void Update () {
 		bool jump = Input.GetKeyDown(KeyCode.W);
 
-        if(jump && canJump) {
+        if(jump && canJump && (jumpCount < jumpLimit)) {
             // TODO force jump
             playerRigidBody.AddForce(Vector2.up * jumpForce * 50);
-            canJump = false;
+            
+            jumpCount++;
+            if (jumpCount >= jumpLimit)
+                canJump = false;
         }
 
         UpdateRaySource();
@@ -41,7 +50,9 @@ public class PlayerController : MonoBehaviour {
 	}
 
     private void MovePlayer() {
-        if(playerDirection == Enums.MoveDirection.MoveRight) {
+        playerRigidBody.velocity = Vector2.ClampMagnitude(playerRigidBody.velocity, 10f);
+
+        if (playerDirection == Enums.MoveDirection.MoveRight) {
             movement.x = 1f;
             transform.localScale = new Vector3(1f, 1f, 1f);
         } else {
@@ -62,8 +73,10 @@ public class PlayerController : MonoBehaviour {
 
         if(hit) {
             animator.SetBool("onGround", true);
-            if(playerRigidBody.velocity.y < 0)
+            if (playerRigidBody.velocity.y < 0) {
                 canJump = true;
+                jumpCount = 0;
+            }
         }  else {
             animator.SetBool("onGround", false);
         }
